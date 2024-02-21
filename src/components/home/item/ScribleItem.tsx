@@ -1,4 +1,3 @@
-import React from "react";
 import { IoIosClose } from "react-icons/io";
 import { FaRegEdit } from "react-icons/fa";
 import CheckBoxItem from "./CheckBoxItem";

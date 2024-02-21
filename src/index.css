@@ -1,8 +1,5 @@
 @tailwind base;
 @tailwind components;
-<<<<<<< HEAD
-@tailwind utilities;
-=======
 @tailwind utilities;
 
 #root{
@@ -15,4 +12,3 @@
     border: 1px solid #EDEEF3;
     border-radius: 15px;
 }
->>>>>>> master

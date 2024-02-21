@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-import React from 'react'
-
-const header = () => {
-  return (
-    <div>header</div>
-  )
-}
-
-export default header
-=======
-import React from "react";
-
 const header = () => {
   return (
     <div className="flex w-full">
@@ -31,4 +18,3 @@ const header = () => {
 };
 
 export default header;
->>>>>>> master

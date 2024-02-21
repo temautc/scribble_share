@@ -18,11 +18,7 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-<<<<<<< HEAD
-    "noFallthroughCasesInSwitch": true
-=======
     "noFallthroughCasesInSwitch": true,
-
     "typeRoots": [
       "./types",
       "./node_modules/@types",
@@ -33,7 +29,6 @@
         "./node_modules/@yandex/ymaps3-types"
       ]
     }
->>>>>>> master
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
