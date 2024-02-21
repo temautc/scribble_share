@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
+<<<<<<< HEAD
 @tailwind utilities;
+=======
+@tailwind utilities;
+
+#root{
+    background-color: #F6F7FA;
+}
+
+.bg-block {
+    font-family: 'Open Sans', sans-serif;
+    background-color: #FFF;
+    border: 1px solid #EDEEF3;
+    border-radius: 15px;
+}
+>>>>>>> master
