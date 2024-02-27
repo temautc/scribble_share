@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
 import CalendarButton from "../buttons/CalendarButton";
 import Dropdown from "../common/Dropdown";
+import DescriptionBlock from "./item/DescriptionBlock";
 const home = () => {
   const [selectedDay, setSelectedDay] = useState("");
   const currentDate = new Date();
   const [selectMonth, setSelectMonth] = useState(currentDate.getMonth());
   const [selectYear, setSelectYear] = useState(currentDate.getUTCFullYear());
-  const [daysInMonth, setDaysInMonth] = useState(
-    33 - new Date(selectYear, selectMonth, 33).getDate()
-  );
+
+  const [daysInPrevMonth, setDaysInPrevMonth] = useState<MonthDays>({});
+  const [daysInMonth, setDaysInMonth] = useState<MonthDays>({});
+  const [daysInNextMonth, setDaysInNextMonth] = useState<MonthDays>({});
+
+  const [todoesInDay, setTodoesInDay] = useState<TodoEventsValue[]>([]);
+
   const arrayYears = [2024, 2025];
   const arrayMonth = [
     "Январь",
@@ -24,6 +29,10 @@ const home = () => {
     "Ноябрь",
     "Декабрь",
   ];
+
+  type MonthDays = {
+    [key: string]: number;
+  };
 
   type TodoEventsValue = {
     id: string;
@@ -56,6 +65,13 @@ const home = () => {
       description: "Еженедельный конференц-звонок с филиалом.",
     },
     {
+      id: "13-1-2024",
+      timeBegin: "16:00",
+      timeEnd: "18:30",
+      title: "Решение проблем с поставками",
+      description: "Разбор проблем связанных с поставками в округе.",
+    },
+    {
       id: "4-2-2024",
       timeBegin: "16:00",
       timeEnd: "17:00",
@@ -77,36 +93,50 @@ const home = () => {
     });
   };
 
-  const prevСalendarButtons = () => {
-    const result: { [key: string]: number } = {};
+  const generateСalendarButtonsInPrevMonth = () => {
     const dayInWeek = new Date(selectYear, selectMonth, 7).getDay();
-    const daysInPrevMonth =
+    const countDaysInPrevMonth =
       calculateDayInMonth(selectYear, selectMonth - 1) + 1;
-    for (let day = daysInPrevMonth - dayInWeek; day < daysInPrevMonth; day++) {
-      result[`${day}-${selectMonth - 1}-${selectYear}`] = day;
+    if (Object.keys(daysInPrevMonth).length > 0) {
+      setDaysInPrevMonth({});
     }
-    return result;
+    for (
+      let day = countDaysInPrevMonth - dayInWeek;
+      day < countDaysInPrevMonth;
+      day++
+    ) {
+      setDaysInPrevMonth((days) => {
+        return { ...days, [`${day}-${selectMonth - 1}-${selectYear}`]: day };
+      });
+    }
   };
 
-  const nextСalendarButtons = () => {
-    const result: { [key: string]: number } = {};
+  const generateCalendarButtonsInMonth = () => {
+    const countDaysInMonth = calculateDayInMonth(selectYear, selectMonth);
+    if (Object.keys(daysInMonth).length > 0) {
+      setDaysInMonth({});
+    }
+    for (let day = 1; day <= countDaysInMonth; day++) {
+      setDaysInMonth((days) => {
+        return { ...days, [`${day}-${selectMonth}-${selectYear}`]: day };
+      });
+    }
+  };
+
+  const generateСalendarButtonsInNextMonth = () => {
     const lastDayOfMonth = 33 - new Date(selectYear, selectMonth, 33).getDate();
     const nextMonthDate = new Date(selectYear, selectMonth, lastDayOfMonth);
     const dayOfWeekLDOM = nextMonthDate.getDay();
+    if (Object.keys(daysInNextMonth).length > 0) {
+      setDaysInNextMonth({});
+    }
     if (dayOfWeekLDOM !== 0) {
       for (let day = 1; day <= 7 - dayOfWeekLDOM; day++) {
-        result[`${day}-${selectMonth + 1}-${selectYear}`] = day;
+        setDaysInNextMonth((days) => {
+          return { ...days, [`${day}-${selectMonth + 1}-${selectYear}`]: day };
+        });
       }
     }
-    return result;
-  };
-
-  const calendarButtons = () => {
-    const result: { [key: string]: number } = {};
-    for (let day = 1; day <= daysInMonth; day++) {
-      result[`${day}-${selectMonth}-${selectYear}`] = day;
-    }
-    return result;
   };
 
   const selectDropdowMonth = (data: string) => {
@@ -122,15 +152,20 @@ const home = () => {
   };
 
   useEffect(() => {
-    const days = calculateDayInMonth(selectYear, selectMonth);
-    setDaysInMonth(days);
+    generateСalendarButtonsInPrevMonth();
+    generateCalendarButtonsInMonth();
+    generateСalendarButtonsInNextMonth();
   }, [selectMonth, selectYear]);
 
   const handleSelectDay = (indexDay: string) => {
-    console.log(indexDay);
     setSelectedDay(indexDay);
+    setTodoesInDay(
+      todoEvents.filter((todo) => {
+        return todo.id === indexDay;
+      })
+    );
   };
-  nextСalendarButtons();
+
   return (
     <div className="flex-1 flex w-full gap-x-10">
       <div className="container mx-auto">
@@ -184,10 +219,10 @@ const home = () => {
                   </li>
                 </ul>
                 <div className="grid grid-rows-5 grid-cols-7 grid-flow-row gap-4 mb-5">
-                  {Object.keys(prevСalendarButtons()).map((key) => (
+                  {Object.keys(daysInPrevMonth).map((key) => (
                     <CalendarButton
                       key={key}
-                      day={prevСalendarButtons()[key]}
+                      day={daysInPrevMonth[key]}
                       indexDay={key}
                       hasNotes={checkNotes(key)}
                       selectDay={handleSelectDay}
@@ -195,10 +230,10 @@ const home = () => {
                       isCurrentMonth={false}
                     />
                   ))}
-                  {Object.keys(calendarButtons()).map((key) => (
+                  {Object.keys(daysInMonth).map((key) => (
                     <CalendarButton
                       key={key} // id
-                      day={calendarButtons()[key]} //+
+                      day={daysInMonth[key]}
                       indexDay={key}
                       hasNotes={checkNotes(key)}
                       selectDay={handleSelectDay}
@@ -206,10 +241,10 @@ const home = () => {
                       isCurrentMonth={true}
                     />
                   ))}
-                  {Object.keys(nextСalendarButtons()).map((key) => (
+                  {Object.keys(daysInNextMonth).map((key) => (
                     <CalendarButton
                       key={key}
-                      day={nextСalendarButtons()[key]}
+                      day={daysInNextMonth[key]}
                       indexDay={key}
                       hasNotes={checkNotes(key)}
                       selectDay={handleSelectDay}
@@ -234,36 +269,10 @@ const home = () => {
               <div className="flex mb-5">
                 <h1 className="text-[24px] font-bold">Описание</h1>
               </div>
-              <div className="flex flex-col">
-                <div className="flex bg-block">
-                  <div className="flex flex-col justify-center items-center font-bold text-center py-[10px] px-[15px] rounded-l-[14px] text-[#0861E1] bg-[#E7EFFB] border-solid border-[#EDEEF3] border-r-2">
-                    <p className="font-normal">8:30</p>
-                    <span className="h-[1px] text-[20px] bg-[#0861E1] w-5 my-[5px]"></span>
-                    <p className="font-normal">10:00</p>
-                  </div>
-                  <div className="flex flex-col p-4 gap-y-2">
-                    <h2 className="font-bold text-[20px] ">Совещание</h2>
-                    <p className="text-[15px]  overflow-hidden whitespace-nowrap w-[197px] text-ellipsis">
-                      Совещание на тему продления страховки.
-                    </p>
-                  </div>
-                  <div className="flex ml-auto mr-[30px] items-center">
-                    <button className="hover:fill-slate-950">
-                      <svg
-                        className="hover:fill-black"
-                        width="48"
-                        height="48"
-                        viewBox="0 0 48 48"
-                        fill="#7A8697"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M4 15.9233C4 14.8241 4.89544 13.9329 6 13.9329H42C43.1046 13.9329 44 14.8241 44 15.9233C44 17.0226 43.1046 17.9138 42 17.9138H6C4.89544 17.9138 4 17.0226 4 15.9233Z" />
-                        <path d="M4 23.885C4 22.7857 4.89544 21.8946 6 21.8946H42C43.1046 21.8946 44 22.7857 44 23.885C44 24.9843 43.1046 25.8754 42 25.8754H6C4.89544 25.8754 4 24.9843 4 23.885Z" />
-                        <path d="M6 29.8562C4.89544 29.8562 4 30.7473 4 31.8466C4 32.946 4.89544 33.8371 6 33.8371H30C31.1046 33.8371 32 32.946 32 31.8466C32 30.7473 31.1046 29.8562 30 29.8562H6Z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+              <div className="flex flex-col gap-y-5">
+                {todoesInDay.map((todoInDay, index) => (
+                  <DescriptionBlock key={index} todo={todoInDay} />
+                ))}
               </div>
             </div>
           </div>
